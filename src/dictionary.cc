@@ -176,9 +176,33 @@ void Dictionary::computeNgrams(const std::string& word,
     std::string value = propsValues[i];
 	std::string prop = value.substr(0, value.find(PROP_VALUE_SEP));
   const bool useProp = args_->props.find(prop) != args_->props.end();
+  const bool doplain = true;
+  if (doplain){
+    std::string temp_word = BOW + value.substr(value.find(PROP_VALUE_SEP)+1,std::string::npos) + EOW;
+	   for (size_t i = 0; i < temp_word.size(); i++) {
+            std::string charn;
+            if ((temp_word[i] & 0xC0) == 0x80) continue;
+            for (size_t j = i, n = 1; j < temp_word.size() && n <= args_->maxn; n++) {
+              charn.push_back(temp_word[j++]);
+              while (j < temp_word.size() && (temp_word[j] & 0xC0) == 0x80) {
+                charn.push_back(temp_word[j++]);
+              }
+              if (n >= args_->minn && !(n == 1 && (i == 0 || j == temp_word.size()))) {
+                int32_t h = hash(charn) % args_->bucket;
+                ngrams.push_back(nwords_ + h);
+		        subentry e;
+		        e.subword = charn;
+		        e.id = nwords_+h;
+		        subngram.push_back(e);
+            // std::cout << "p  using subword " << e.subword << "\n";
+              }
+            }
+          }
+  }
 	if (useProp) {
-	   if(prop == "w"){
-
+    std::cout << "using prop\n";
+	   if(prop == "w" && !doplain){
+      //  std::cout << "here for " << word << std::endl;
         // If only whole word  uncomment next two lines and comment rest code in the if loop
 		/*int32_t h = hash(value) % args_->bucket;
 		ngrams.push_back(nwords_ + h);*/
@@ -200,6 +224,7 @@ void Dictionary::computeNgrams(const std::string& word,
 		        e.subword = charn;
 		        e.id = nwords_+h;
 		        subngram.push_back(e);
+            std::cout << "pusing subword " << e.subword << "\n";
               }
             }
           }

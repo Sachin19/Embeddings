@@ -39,13 +39,15 @@ void FastText::getSubVector(Vector& vec, Vector& lemmavec, Vector& morphvec,Vect
    lemmavec.zero();
    morphvec.zero();
    ipavec.zero();
+  //  std::cout << "Saving subvectors for " << word << " " << subngrams.size() << std::endl;
    for(int32_t it = 0;it !=subngrams.size(); it++){
 	int32_t h = dict_->getHash(subngrams[it].subword);
 	if(mapOfSubWords.find(h) == mapOfSubWords.end()){  //First use of that hash
- 		//std::cout << subngrams[it].subword << std::endl;
+ 		std::cout << subngrams[it].subword << std::endl;
 		vec.zero();
 		mapOfSubWords.insert(std::make_pair(h,subngrams[it].subword));
   		vec.addRow(*input_, h);
+        // std::cout << "saving " << subngrams[it].subword << std::endl;
     		ofs << subngrams[it].subword << " " << vec << std::endl;
  	}
  }
@@ -112,7 +114,7 @@ void FastText::saveVectors() {
  
   for (int32_t i = 0; i < dict_->nwords(); i++) {
     std::string word = dict_->getWord(i);
-   //std::cout << i << std::endl; 
+  //  std::cout << i << std::endl; 
    getVector(vec, word);
    getSubVector(subvec,sublemma,submorph,subipa, mapOfSubWords,i,ofsub,oflemma,ofmorph,ofi);
     ofs << word << " " << vec << std::endl;
